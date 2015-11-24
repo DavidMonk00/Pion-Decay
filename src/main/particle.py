@@ -38,7 +38,6 @@ class Pion(Particle):
         energyvector = rel.EnergyFourVector(energy,(0,0,np.sqrt(energy*energy - mass*mass)))
         Particle.__init__(self, energyvector, initial_position, mass, lifetime)
     def DecayCheck(self):
-        self.exit = False
         ct = const.c*self.decay_time
         self.decay_pos = rel.PositionFourVector(self.pos.temporal + ct, ct*self.beta)
         if self.decay_pos.spatial[2] > 100:
@@ -100,7 +99,6 @@ class Muon(Particle):
                 break
     
     def DecayCheck(self):
-        self.exit = False
         ct = const.c*self.decay_time
         self.decay_pos = rel.PositionFourVector(self.pos.temporal + ct, ct*self.beta)
         if self.decay_pos.spatial[2] > 100 or np.sqrt(self.decay_pos.spatial[0]*self.decay_pos.spatial[0] + self.decay_pos.spatial[1]*self.decay_pos.spatial[1]) > 5:
