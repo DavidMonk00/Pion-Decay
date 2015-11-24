@@ -1,2 +1,2 @@
 # Pion-Decay
-Python simulation of Pion decay within a detector
+Python simulation of Pion decays within a detector
