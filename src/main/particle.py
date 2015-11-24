@@ -12,6 +12,7 @@ const = constants.Constants()
 Mass = constants.Mass()
 
 def Michel():
+    '''Generates triangular distribution'''
     x, y = np.random.random(2)
     if x >= y:
         return 0.25 + x * 52.75
@@ -19,7 +20,9 @@ def Michel():
         return 0.25 + y * 52.75
 
 class Particle:
-    exit = False
+    '''
+    Base particle class: __init__ calculates beta, gamma and decay time for given particle
+    '''
     def __init__(self, energyvector, initial_position, mass = 1, lifetime = 0):
         ''' Initial position is a PostionFourVector class, with t = 0
             energy is a float which is the energy of the particle in MeV'''
@@ -38,15 +41,22 @@ class Pion(Particle):
         energyvector = rel.EnergyFourVector(energy,(0,0,np.sqrt(energy*energy - mass*mass)))
         Particle.__init__(self, energyvector, initial_position, mass, lifetime)
     def DecayCheck(self):
+        '''
+        Checks if decay occurs within the tube. 
+        Should be called before invoking the Decay() function
+        '''
         ct = const.c*self.decay_time
         self.decay_pos = rel.PositionFourVector(self.pos.temporal + ct, ct*self.beta)
         if self.decay_pos.spatial[2] > 100:
             self.type = "e"
-            self.exit = True
             self.exit_pos = np.array([0,0,100])
-        return self.exit
-    
+            return True
+        return False
     def Decay(self):
+        '''
+        Decays particle into either an electron or muon, and returns their
+        class with initial position and energy.
+        '''
         _phi = 2*np.pi*np.random.uniform()
         _costheta = 2*np.random.uniform() - 1
         _theta = np.arccos(_costheta)
@@ -73,6 +83,10 @@ class Electron(Particle):
         lifetime = np.Inf
         Particle.__init__(self, energyvector, initial_position, mass, lifetime)   
     def ExitPosition(self):
+        '''
+        Calculates where the electron will leave the tube and returns
+        this position as an array
+        '''
         ct = np.linspace(0,(const.dimensions[1] - self.pos.spatial[2])/self.beta[2],1e3)
         pos = self.pos.spatial +  ct*self.beta
         pos_cyl = np.array([[np.sqrt((pos[0]*pos[0]) + (pos[1]*pos[1]))],[pos[2]]]).reshape(2,pos.shape[1])
@@ -87,8 +101,11 @@ class Muon(Particle):
         mass = Mass.muon
         lifetime = 2.2e-6
         Particle.__init__(self, energyvector, initial_position, mass, lifetime)
-    
     def ExitPosition(self):
+        '''
+        Calculates where the muon will leave the tube if it does not decay.
+        Should be invoked when DecayCheck() returns false.
+        '''
         ct = np.linspace(0,(const.dimensions[1] - self.pos.spatial[2])/self.beta[2],1e3)
         pos = self.pos.spatial +  ct*self.beta
         pos_cyl = np.array([[np.sqrt((pos[0]*pos[0]) + (pos[1]*pos[1]))],[pos[2]]]).reshape(2,pos.shape[1])
@@ -97,16 +114,23 @@ class Muon(Particle):
             if exit_bool[:,i].all() != True:
                 return pos[:,i]
                 break
-    
     def DecayCheck(self):
+        '''
+        Checks if muon decays before leaving the tube. Should be invoked
+        before either Decay() or ExitPosition()
+        '''
         ct = const.c*self.decay_time
         self.decay_pos = rel.PositionFourVector(self.pos.temporal + ct, ct*self.beta)
-        if self.decay_pos.spatial[2] > 100 or np.sqrt(self.decay_pos.spatial[0]*self.decay_pos.spatial[0] + self.decay_pos.spatial[1]*self.decay_pos.spatial[1]) > 5:
-            self.exit = True
+        if self.decay_pos.spatial[2] > const.dimensions[1] or np.sqrt(self.decay_pos.spatial[0]*self.decay_pos.spatial[0] +
+                                                                      self.decay_pos.spatial[1]*self.decay_pos.spatial[1]) > const.dimensions[0]:
             self.exit_pos = self.ExitPosition()
-        return self.exit
-        
+            return True
+        return False   
     def Decay(self):
+        '''
+        Decays muon into electron and returns an electron class with
+        initial position and energy
+        '''
         _phi = 2*np.pi*np.random.uniform()
         _costheta = 2*np.random.uniform() - 1
         _theta = np.arccos(_costheta)
