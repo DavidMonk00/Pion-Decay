@@ -4,15 +4,13 @@ Created on 17 Nov 2015
 @author: david
 '''
 
-import particle as p
-import numpy as np
+from particle import Pion
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
-from __builtin__ import int
 
 def ParticleSim(energy):
     '''Returns position of final particle's exit from detector'''
-    pi = p.Pion(energy)
+    pi = Pion(energy)
     if pi.DecayCheck() == False:
         decay_part = pi.Decay()
         if pi.type == 'e':
@@ -58,10 +56,8 @@ def PlotExit3D(n,energy):
     ax.scatter(em[0], em[1], em[2], c = 'b', s = 25)
     plt.show()
 
-
 def main():
-    PlotExit3D(int(1e5), 500)
-    
-    
+    PlotExit3D(int(300), 500)
+      
 if __name__ == '__main__':
     main()
