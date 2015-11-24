@@ -7,7 +7,6 @@ Created on 17 Nov 2015
 import numpy as np
 import relativity as rel
 import constants as constants
-from numpy import Inf
 
 const = constants.Constants()
 Mass = constants.Mass()
