@@ -12,7 +12,7 @@ class Constants:
     '''
     c = 3e8
     e = 1.6e-19
-    dimensions = array([[5],[100]])
+    dimensions = array([[2.5],[100]])
     
 class Mass:
     electron = 0.5
