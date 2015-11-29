@@ -10,7 +10,6 @@ import constants as constants
 
 const = constants.Constants()
 Mass = constants.Mass()
-detector = constants.Detector()
 
 def Michel():
     '''Generates triangular distribution'''
@@ -54,6 +53,14 @@ class Particle:
         exit_bool = pos_cyl < const.dimensions.reshape(2,1)
         e = self.RecurFocus(exit_bool)
         return pos[:,e]
+    def Detect(self, detector):
+        ct = np.linspace(0,(const.dimensions[1] - self.pos.spatial[2])/self.beta[2],1e3)
+        pos = self.pos.spatial +  ct*self.beta
+        enter_bool = pos > detector.position
+        exit_bool = pos < detector.position + detector.dimensions
+        a = self.RecurFocus(enter_bool)
+        b = self.RecurFocus(exit_bool)
+        return np.array([pos[:,a],pos[:,b]])
         
 class Pion(Particle):
     branching = 1e-4
@@ -103,7 +110,11 @@ class Electron(Particle):
     def __init__(self, energyvector, initial_position):
         mass = Mass.electron #in MeV
         lifetime = np.Inf
-        Particle.__init__(self, energyvector, initial_position, mass, lifetime)   
+        Particle.__init__(self, energyvector, initial_position, mass, lifetime)
+    def EnergyDeposited(self, detector):
+        coords = self.Detect(detector)
+        dist = np.linalg.norm(coords[0]-coords[1])
+        return self.energyvector.temporal*(1 - np.exp(-dist/0.026))
     
 class Muon(Particle):
     def __init__(self, energyvector, initial_position):
@@ -136,11 +147,11 @@ class Muon(Particle):
                                                          p*np.sin(_theta)*np.sin(_phi),
                                                          p*_costheta)).boost(-self.beta),
                         self.decay_pos)
-    def Detect(self):
-        ct = np.linspace(0,(const.dimensions[1] - self.pos.spatial[2])/self.beta[2],1e3)
-        pos = self.pos.spatial +  ct*self.beta
-        enter_bool = pos > detector.position
-        exit_bool = pos < detector.position + detector.dimensions
-        a = self.RecurFocus(enter_bool)
-        b = self.RecurFocus(exit_bool)
-        return np.array([pos[:,a],pos[:,b]])
+    def EnergyDeposited(self, detector):
+        coords = self.Detect(detector)
+        dist = np.linalg.norm(coords[0]-coords[1])
+        energy_lost = 0.048*dist
+        if energy_lost > self.energyvector.temporal:
+            return self.energyvector.temporal
+        else:
+            return energy_lost
