@@ -10,6 +10,12 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import constants as constants
 
+def PlotHistogram(data):
+    hist, bins = np.histogram(data, bins = 50)
+    width = 0.7*(bins[1]-bins[0])
+    center = (bins[:-1] + bins[1:]) / 2
+    plt.bar(center, hist, align='center', width=width)
+    plt.show()
 
 class Simulation:
     const = constants.Constants()
@@ -93,20 +99,26 @@ class Simulation:
         ax.set_xscale('log')
         plt.show()
     def PlotEnergyDeposited(self, n, energy):
-        E = []
+        Ee,Em = np.empty(0), np.empty(0)
         for i in range(int(n)):
             e = self.ParticleSimDetect(500)
             if e != 0:
-                E.append(e)
+                if e > 2:                    
+                    Ee = np.append(Ee,e)
+                else:
+                    Em = np.append(Em,e)
         fig = plt.figure()
-        ax = fig.add_subplot(111)
-        ax.hist(E,100)
+        ax = fig.add_subplot(2,1,1)
+        ax.hist(Em, bins = 50)
+        ax = fig.add_subplot(2,1,2)
+        ax.hist(Ee, bins=50)
         plt.show()
+        #PlotHistogram(Em)
     
 def main():
     sim = Simulation(np.array([[1],[1],[9]]))
     #PlotExit3D(int(1e4), 1000)
-    sim.PlotEnergyDeposited(1e4, 500)
+    sim.PlotEnergyDeposited(1e5, 500)
     #MuonFraction(1e1, np.logspace(np.log10(500),np.log10(1e4)))
       
 if __name__ == '__main__':
