@@ -10,6 +10,7 @@ import constants as constants
 
 const = constants.Constants()
 Mass = constants.Mass()
+detector = constants.Detector()
 
 def Michel():
     '''Generates triangular distribution'''
@@ -32,6 +33,16 @@ class Particle:
         self.gamma = self.energyvector.temporal/mass
         self.beta = energyvector.spatial/(self.gamma*mass)
         self.decay_time = np.random.exponential(self.gamma*lifetime)
+    def RecurFocus(self,bool_array):
+        l = bool_array.shape[1]
+        a = l/2
+        for i in xrange(2,int(np.ceil(np.log2(l)))):
+            p = int(l/2**i)
+            if bool_array[:,a].all() != True:
+                a -= p
+            else:
+                a += p
+        return a
     def ExitPosition(self):
         '''
         Calculates where the particle will leave the tube and returns
@@ -41,14 +52,8 @@ class Particle:
         pos = self.pos.spatial +  ct*self.beta
         pos_cyl = np.array([[np.sqrt((pos[0]*pos[0]) + (pos[1]*pos[1]))],[pos[2]]]).reshape(2,pos.shape[1])
         exit_bool = pos_cyl < const.dimensions.reshape(2,1)
-        a = exit_bool.shape[1]/2
-        for i in range(2,int(np.ceil(np.log2(exit_bool.shape[1])))):
-            p = int(exit_bool.shape[1]/2**i)
-            if exit_bool[:,a].all() != True:
-                a -= p
-            else:
-                a += p
-        return pos[:,a]
+        e = self.RecurFocus(exit_bool)
+        return pos[:,e]
         
 class Pion(Particle):
     branching = 1e-4
@@ -57,14 +62,14 @@ class Pion(Particle):
         lifetime = 2.6e-8
         energyvector = rel.EnergyFourVector(energy,(0,0,np.sqrt(energy*energy - mass*mass)))
         Particle.__init__(self, energyvector, initial_position, mass, lifetime)
-    def DecayCheck(self):
+    def DecayCheck(self, dimensions):
         '''
         Checks if decay occurs within the tube. 
         Should be called before invoking the Decay() function
         '''
         ct = const.c*self.decay_time
         self.decay_pos = rel.PositionFourVector(self.pos.temporal + ct, ct*self.beta)
-        if self.decay_pos.spatial[2] > 100:
+        if self.decay_pos.spatial[2] > dimensions[1]:
             self.type = "e"
             self.exit_pos = np.array([0,0,100])
             return True
@@ -100,21 +105,20 @@ class Electron(Particle):
         lifetime = np.Inf
         Particle.__init__(self, energyvector, initial_position, mass, lifetime)   
     
-
 class Muon(Particle):
     def __init__(self, energyvector, initial_position):
         mass = Mass.muon
         lifetime = 2.2e-6
         Particle.__init__(self, energyvector, initial_position, mass, lifetime)
-    def DecayCheck(self):
+    def DecayCheck(self, dimensions):
         '''
         Checks if muon decays before leaving the tube. Should be invoked
         before either Decay() or ExitPosition()
         '''
         ct = const.c*self.decay_time
         self.decay_pos = rel.PositionFourVector(self.pos.temporal + ct, ct*self.beta)
-        if self.decay_pos.spatial[2] > const.dimensions[1] or np.sqrt(self.decay_pos.spatial[0]*self.decay_pos.spatial[0] +
-                                                                      self.decay_pos.spatial[1]*self.decay_pos.spatial[1]) > const.dimensions[0]:
+        if self.decay_pos.spatial[2] > dimensions[1] or np.sqrt(self.decay_pos.spatial[0]*self.decay_pos.spatial[0] +
+                                                                      self.decay_pos.spatial[1]*self.decay_pos.spatial[1]) > dimensions[0]:
             self.exit_pos = self.ExitPosition()
             return True
         return False   
@@ -132,3 +136,11 @@ class Muon(Particle):
                                                          p*np.sin(_theta)*np.sin(_phi),
                                                          p*_costheta)).boost(-self.beta),
                         self.decay_pos)
+    def Detect(self):
+        ct = np.linspace(0,(const.dimensions[1] - self.pos.spatial[2])/self.beta[2],1e3)
+        pos = self.pos.spatial +  ct*self.beta
+        enter_bool = pos > detector.position
+        exit_bool = pos < detector.position + detector.dimensions
+        a = self.RecurFocus(enter_bool)
+        b = self.RecurFocus(exit_bool)
+        return np.array([pos[:,a],pos[:,b]])
