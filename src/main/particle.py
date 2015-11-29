@@ -32,6 +32,23 @@ class Particle:
         self.gamma = self.energyvector.temporal/mass
         self.beta = energyvector.spatial/(self.gamma*mass)
         self.decay_time = np.random.exponential(self.gamma*lifetime)
+    def ExitPosition(self):
+        '''
+        Calculates where the particle will leave the tube and returns
+        this position as an array
+        '''
+        ct = np.linspace(0,(const.dimensions[1] - self.pos.spatial[2])/self.beta[2],1e3)
+        pos = self.pos.spatial +  ct*self.beta
+        pos_cyl = np.array([[np.sqrt((pos[0]*pos[0]) + (pos[1]*pos[1]))],[pos[2]]]).reshape(2,pos.shape[1])
+        exit_bool = pos_cyl < const.dimensions.reshape(2,1)
+        a = exit_bool.shape[1]/2
+        for i in range(2,int(np.ceil(np.log2(exit_bool.shape[1])))):
+            p = int(exit_bool.shape[1]/2**i)
+            if exit_bool[:,a].all() != True:
+                a -= p
+            else:
+                a += p
+        return pos[:,a]
         
 class Pion(Particle):
     branching = 1e-4
@@ -82,38 +99,13 @@ class Electron(Particle):
         mass = Mass.electron #in MeV
         lifetime = np.Inf
         Particle.__init__(self, energyvector, initial_position, mass, lifetime)   
-    def ExitPosition(self):
-        '''
-        Calculates where the electron will leave the tube and returns
-        this position as an array
-        '''
-        ct = np.linspace(0,(const.dimensions[1] - self.pos.spatial[2])/self.beta[2],1e3)
-        pos = self.pos.spatial +  ct*self.beta
-        pos_cyl = np.array([[np.sqrt((pos[0]*pos[0]) + (pos[1]*pos[1]))],[pos[2]]]).reshape(2,pos.shape[1])
-        exit_bool  = pos_cyl < const.dimensions.reshape(2,1)
-        for i in xrange(int(pos.shape[1])):
-            if exit_bool[:,i].all() != True:
-                return pos[:,i]
-                break
+    
 
 class Muon(Particle):
     def __init__(self, energyvector, initial_position):
         mass = Mass.muon
         lifetime = 2.2e-6
         Particle.__init__(self, energyvector, initial_position, mass, lifetime)
-    def ExitPosition(self):
-        '''
-        Calculates where the muon will leave the tube if it does not decay.
-        Should be invoked when DecayCheck() returns false.
-        '''
-        ct = np.linspace(0,(const.dimensions[1] - self.pos.spatial[2])/self.beta[2],1e3)
-        pos = self.pos.spatial +  ct*self.beta
-        pos_cyl = np.array([[np.sqrt((pos[0]*pos[0]) + (pos[1]*pos[1]))],[pos[2]]]).reshape(2,pos.shape[1])
-        exit_bool  = pos_cyl < const.dimensions.reshape(2,1)
-        for i in xrange(int(pos.shape[1])):
-            if exit_bool[:,i].all() != True:
-                return pos[:,i]
-                break
     def DecayCheck(self):
         '''
         Checks if muon decays before leaving the tube. Should be invoked
@@ -139,4 +131,4 @@ class Muon(Particle):
         return Electron(rel.EnergyFourVector(energy,(p*np.sin(_theta)*np.cos(_phi),
                                                          p*np.sin(_theta)*np.sin(_phi),
                                                          p*_costheta)).boost(-self.beta),
-                            self.decay_pos)
+                        self.decay_pos)
