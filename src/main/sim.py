@@ -13,6 +13,8 @@ import constants as constants
 
 class Simulation:
     const = constants.Constants()
+    def __init__(self, position):
+        self.detector = constants.Detector(position)
     def ParticleSimExit(self, energy):
         '''Returns position of final particle's exit from detector'''
         pi = Pion(energy)
@@ -31,16 +33,19 @@ class Simulation:
             return 'pion', pi.exit_pos    
     def ParticleSimDetect(self, energy):
         pi = Pion(energy)
-        if pi.DecayCheck() == False:
+        if pi.DecayCheck(np.array([2.5,self.detector.position[2]+0.3])) == False:
             decay_part = pi.Decay()
             if pi.type == 'e':
-                return decay_part.EnergyDeposited()
+                return decay_part.EnergyDeposited(self.detector)
             else:
                 mu = decay_part
-                if mu.DecayCheck() == False:
+                if mu.DecayCheck(np.array([2.5,self.detector.position[2]+0.3])) == False:
                     el = mu.Decay()
-                    return el.EnergyDeposited()
-
+                    return el.EnergyDeposited(self.detector)
+                else:
+                    return mu.EnergyDeposited(self.detector)
+        else:
+            return 0
     def PlotExit3D(self, n,energy):
         pi, mu, e, em = [[],[],[]], [[],[],[]], [[],[],[]], [[],[],[]]
         for i in xrange(n):
@@ -78,7 +83,7 @@ class Simulation:
             elif p_type == 'muon-electron':
                 decayed += 1
         return decayed/left
-    def MuonFraction(self, n, energy_array):
+    def PlotMuonFraction(self, n, energy_array):
         frac = []
         for i in energy_array:
             frac.append(self.MuonFractionCalc(n, i))
@@ -87,11 +92,21 @@ class Simulation:
         ax.scatter(energy_array,frac)
         ax.set_xscale('log')
         plt.show()
+    def PlotEnergyDeposited(self, n, energy):
+        E = []
+        for i in range(int(n)):
+            e = self.ParticleSimDetect(500)
+            if e != 0:
+                E.append(e)
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.hist(E,100)
+        plt.show()
     
 def main():
-    sim = Simulation()
+    sim = Simulation(np.array([[1],[1],[9]]))
     #PlotExit3D(int(1e4), 1000)
-    print sim.ParticleSimExit(500)
+    sim.PlotEnergyDeposited(1e4, 500)
     #MuonFraction(1e1, np.logspace(np.log10(500),np.log10(1e4)))
       
 if __name__ == '__main__':
