@@ -52,6 +52,21 @@ class Simulation:
                     return mu.EnergyDeposited(self.detector)
         else:
             return 0
+    def ParticleSimEnergy(self, energy):
+        pi = Pion(energy)
+        if pi.DecayCheck(self.const.dimensions) == False:
+            decay_part = pi.Decay()
+            if pi.type == 'e':
+                return 'electron', decay_part.energyvector.temporal
+            else:
+                mu = decay_part
+                if mu.DecayCheck(self.const.dimensions) == False:
+                    el = mu.Decay()
+                    return 'muon-electron', el.energyvector.temporal
+                else:
+                    return 'muon', mu.energyvector.temporal
+        else:
+            return 'pion', pi.energyvector.temporal
     def PlotExit3D(self, n,energy):
         pi, mu, e, em = [[],[],[]], [[],[],[]], [[],[],[]], [[],[],[]]
         for i in xrange(n):
@@ -98,6 +113,26 @@ class Simulation:
         ax.scatter(energy_array,frac)
         ax.set_xscale('log')
         plt.show()
+    def PlotEnergySpectra(self, n, energy):
+        pi, mu, e, em = [],[],[],[]
+        for i in xrange(int(n)):
+            p_type, p_energy = self.ParticleSimEnergy(energy)
+            if p_type == 'electron':
+                e.append(p_energy)
+            elif p_type == 'pion':
+                pi.append(p_energy)
+            elif p_type == 'muon':
+                mu.append(p_energy)
+            elif p_type == 'muon-electron':
+                em.append(p_energy)
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.hist(pi)
+        if len(e) > 0:
+            ax.hist(e)
+        ax.hist(mu, facecolor='green')
+        ax.hist(em)
+        plt.show()
     def PlotEnergyDeposited(self, n, energy):
         Ee,Em = np.empty(0), np.empty(0)
         for i in range(int(n)):
@@ -107,6 +142,7 @@ class Simulation:
                     Ee = np.append(Ee,e)
                 else:
                     Em = np.append(Em,e)
+        print float(len(Ee))/float(len(Em))
         fig = plt.figure()
         ax = fig.add_subplot(2,1,1)
         ax.hist(Em, bins = 50)
@@ -118,7 +154,7 @@ class Simulation:
 def main():
     sim = Simulation(np.array([[1],[1],[9]]))
     #PlotExit3D(int(1e4), 1000)
-    sim.PlotEnergyDeposited(1e5, 500)
+    sim.PlotEnergySpectra(1e3, 500)
     #MuonFraction(1e1, np.logspace(np.log10(500),np.log10(1e4)))
       
 if __name__ == '__main__':
