@@ -114,24 +114,34 @@ class Plot:
             ax.hist(e)
         ax.hist(mu, facecolor='green')
         ax.hist(em)
-        plt.show()    
-    def EnergyDeposited(self, n, energy):
+        plt.show()
+    def EnergyDepositedDumb(self, n , energy):
+        E = np.empty(0)
+        for i in range(int(n)):
+            e = self.sim.ParticleDetect(500)
+            E = np.append(E,e)
+        fig = plt.figure()
+        ax = fig.add_subplot(1,1,1)
+        ax.hist(E, range=(min(E),max(E)), bins=50)
+        plt.show()
+        #PlotHistogram(Em)  
+    def EnergyDepositedSmart(self, n, energy):
         Ee,Em, Eee = np.empty(0), np.empty(0), np.empty(0)
         for i in range(int(n)):
             e = self.sim.ParticleDetect(500)
             if e != 0:
-                if e > 2 and e < 10:                    
-                    Ee = np.append(Ee,e)
-                elif e >= 10:
+                #if e > 10 and e < 10:                    
+                #    Ee = np.append(Ee,e)
+                if e >= 7.5:
                     Eee = np.append(Eee, e)
                 else:
                     Em = np.append(Em,e)
-        print float(len(Em))/float(len(Eee))
+        print float(len(Em))/float(len(Ee)+len(Eee))
         fig = plt.figure()
-        #ax = fig.add_subplot(2,1,1)
-        #ax.hist(Em, bins=50)
         ax = fig.add_subplot(2,1,1)
-        ax.hist(Ee, range=(4.3,4.38), bins=50)
+        ax.hist(Em, range=(min(Em),max(Em)), bins=50)
+        #ax = fig.add_subplot(3,1,2)
+        #ax.hist(Ee, range=(min(Ee),max(Ee)), bins=50)
         ax = fig.add_subplot(2,1,2)
         ax.hist(Eee, range=(min(Eee),max(Eee)), bins=50)
         plt.show()
@@ -150,9 +160,9 @@ class Plot:
         #print sum(pi)*len(mu)/(sum(mu)*len(pi))
         
 def main():
-    plot = Plot(np.array([[1],[1],[9]]))
+    plot = Plot(np.array([[1],[1],[50]]))
     #PlotExit3D(int(1e4), 1000)
-    plot.EnergyDeposited(1e5, 10000)
+    plot.EnergyDepositedSmart(1e6, 10000)
     #MuonFraction(1e1, np.logspace(np.log10(500),np.log10(1e4)))
       
 if __name__ == '__main__':
