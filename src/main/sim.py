@@ -6,8 +6,6 @@ Created on 17 Nov 2015
 
 import numpy as np
 from particle import Pion
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.pyplot as plt
 import constants as constants
 
 class Simulation:
@@ -42,6 +40,7 @@ class Simulation:
                     el = mu.Decay()
                     return el.EnergyDeposited(self.detector)
                 else:
+                    #print mu.EnergyDeposited(self.detector)
                     return mu.EnergyDeposited(self.detector)
         else:
             return 0
