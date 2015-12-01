@@ -150,7 +150,7 @@ class Muon(Particle):
     def EnergyDeposited(self, detector):
         coords = self.Detect(detector)
         dist = np.linalg.norm(coords[0]-coords[1])
-        energy_lost = 0.048*dist
+        energy_lost = 480*dist
         if energy_lost > self.energyvector.temporal:
             return self.energyvector.temporal
         else:
