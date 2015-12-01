@@ -119,7 +119,8 @@ class Plot:
         E = np.empty(0)
         for i in range(int(n)):
             e = self.sim.ParticleDetect(500)
-            E = np.append(E,e)
+            if e != 0:
+                E = np.append(E,e)
         fig = plt.figure()
         ax = fig.add_subplot(1,1,1)
         ax.hist(E, range=(min(E),max(E)), bins=50)
@@ -132,7 +133,7 @@ class Plot:
             if e != 0:
                 #if e > 10 and e < 10:                    
                 #    Ee = np.append(Ee,e)
-                if e >= 7.5:
+                if e >= 250:
                     Eee = np.append(Eee, e)
                 else:
                     Em = np.append(Em,e)
@@ -162,7 +163,7 @@ class Plot:
 def main():
     plot = Plot(np.array([[1],[1],[50]]))
     #PlotExit3D(int(1e4), 1000)
-    plot.EnergyDepositedSmart(1e6, 10000)
+    plot.EnergyDepositedDumb(1e4, 10000)
     #MuonFraction(1e1, np.logspace(np.log10(500),np.log10(1e4)))
       
 if __name__ == '__main__':
