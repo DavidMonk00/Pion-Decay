@@ -77,6 +77,7 @@ class Plot:
                 pi.append(float(x[0][2]))
         #print "Mean Pion decay position (in lab frame): ",sum(pi)/len(pi)
         #print "Mean Muon decay position (in lab frame): ",sum(mu)/len(mu)
+        print sum(pi)/len(pi)
         print  sum(mu)/len(mu) - sum(pi)/len(pi)
         print len(pi)/len(mu)
         '''fig = plt.figure()
@@ -115,20 +116,24 @@ class Plot:
         ax.hist(em)
         plt.show()    
     def EnergyDeposited(self, n, energy):
-        Ee,Em = np.empty(0), np.empty(0)
+        Ee,Em, Eee = np.empty(0), np.empty(0), np.empty(0)
         for i in range(int(n)):
             e = self.sim.ParticleDetect(500)
             if e != 0:
-                if e > 2:                    
+                if e > 2 and e < 10:                    
                     Ee = np.append(Ee,e)
+                elif e >= 10:
+                    Eee = np.append(Eee, e)
                 else:
                     Em = np.append(Em,e)
-        print float(len(Ee))/float(len(Em))
+        print float(len(Em))/float(len(Eee))
         fig = plt.figure()
+        #ax = fig.add_subplot(2,1,1)
+        #ax.hist(Em, bins=50)
         ax = fig.add_subplot(2,1,1)
-        ax.hist(Em, bins = 50)
+        ax.hist(Ee, range=(4.3,4.38), bins=50)
         ax = fig.add_subplot(2,1,2)
-        ax.hist(Ee, bins=50)
+        ax.hist(Eee, range=(min(Eee),max(Eee)), bins=50)
         plt.show()
         #PlotHistogram(Em)
     def DecayTime(self, n, energy):
@@ -147,9 +152,7 @@ class Plot:
 def main():
     plot = Plot(np.array([[1],[1],[9]]))
     #PlotExit3D(int(1e4), 1000)
-    x = [500,1000,2500,5000,10000]
-    for i in x:
-        plot.DecayPosition1D(1e4, i)
+    plot.EnergyDeposited(1e5, 10000)
     #MuonFraction(1e1, np.logspace(np.log10(500),np.log10(1e4)))
       
 if __name__ == '__main__':
