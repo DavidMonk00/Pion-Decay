@@ -161,9 +161,9 @@ class Plot:
         #print sum(pi)*len(mu)/(sum(mu)*len(pi))
         
 def main():
-    plot = Plot(np.array([[1],[1],[50]]))
+    plot = Plot(np.array([[0.1],[0.1],[50]]))
     #PlotExit3D(int(1e4), 1000)
-    plot.EnergyDepositedDumb(1e4, 10000)
+    plot.EnergyDepositedDumb(1e3, 10000)
     #MuonFraction(1e1, np.logspace(np.log10(500),np.log10(1e4)))
       
 if __name__ == '__main__':
