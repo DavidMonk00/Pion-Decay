@@ -32,15 +32,25 @@ class Particle:
         self.gamma = self.energyvector.temporal/mass
         self.beta = energyvector.spatial/(self.gamma*mass)
         self.decay_time = np.random.exponential(self.gamma*lifetime)
-    def RecurFocus(self,bool_array):
+    def RecurFocusEnter(self,bool_array):
         l = bool_array.shape[1]
         a = l/2
-        for i in xrange(2,int(np.ceil(np.log2(l)))):
+        for i in xrange(2,int(np.ceil(np.log2(l)))+5):
             p = int(l/2**i)
             if bool_array[:,a].all() != True:
-                a -= p
-            else:
                 a += p
+            else:
+                a -= p
+        return a
+    def RecurFocusExit(self,bool_array):
+        l = bool_array.shape[1]
+        a = l/2
+        for i in xrange(2,int(np.ceil(np.log2(l)))+5):
+            p = int(l/2**i)
+            if bool_array[:,a].any() != True:
+                a += p
+            else:
+                a -= p
         return a
     def ExitPosition(self):
         '''
@@ -51,15 +61,17 @@ class Particle:
         pos = self.pos.spatial +  ct*self.beta
         pos_cyl = np.array([[np.sqrt((pos[0]*pos[0]) + (pos[1]*pos[1]))],[pos[2]]]).reshape(2,pos.shape[1])
         exit_bool = pos_cyl < const.dimensions.reshape(2,1)
-        e = self.RecurFocus(exit_bool)
+        e = self.RecurFocusEnter(exit_bool)
         return pos[:,e]
     def Detect(self, detector):
-        ct = np.linspace(0,(const.dimensions[1] - self.pos.spatial[2])/self.beta[2],1e3)
+        ct = np.linspace(0,(const.dimensions[1] - self.pos.spatial[2])/self.beta[2],1e5)
         pos = self.pos.spatial +  ct*self.beta
         enter_bool = pos > detector.position
-        exit_bool = pos < detector.position + detector.dimensions
-        a = self.RecurFocus(enter_bool)
-        b = self.RecurFocus(exit_bool)
+        exit_bool = pos > (detector.position + detector.dimensions)
+        a = self.RecurFocusEnter(enter_bool)
+        b = self.RecurFocusExit(exit_bool)
+        if b < a:
+            return np.zeros(2)
         return np.array([pos[:,a],pos[:,b]])
         
 class Pion(Particle):
@@ -150,7 +162,7 @@ class Muon(Particle):
     def EnergyDeposited(self, detector):
         coords = self.Detect(detector)
         dist = np.linalg.norm(coords[0]-coords[1])
-        energy_lost = 0.048*dist
+        energy_lost = 480*dist
         if energy_lost > self.energyvector.temporal:
             return self.energyvector.temporal
         else:
