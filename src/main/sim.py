@@ -40,7 +40,6 @@ class Simulation:
                     el = mu.Decay()
                     return el.EnergyDeposited(self.detector)
                 else:
-                    #print mu.EnergyDeposited(self.detector)
                     return mu.EnergyDeposited(self.detector)
         else:
             return 0
