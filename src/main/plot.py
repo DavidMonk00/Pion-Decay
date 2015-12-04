@@ -118,32 +118,34 @@ class Plot:
     def EnergyDepositedDumb(self, n , energy):
         E = np.empty(0)
         for i in range(int(n)):
-            e = self.sim.ParticleDetect(500)
+            e = self.sim.ParticleDetect(energy)
             if e != 0:
+                print e
                 E = np.append(E,e)
         fig = plt.figure()
         ax = fig.add_subplot(1,1,1)
         ax.hist(E, range=(min(E),max(E)), bins=50)
         plt.show()
         #PlotHistogram(Em)  
-    def EnergyDepositedSmart(self, n, energy):
-        Ee,Em, Eee = np.empty(0), np.empty(0), np.empty(0)
-        for i in range(int(n)):
-            e = self.sim.ParticleDetect(500)
-            if e != 0:
-                #if e > 10 and e < 10:                    
-                #    Ee = np.append(Ee,e)
-                if e >= 250:
-                    Eee = np.append(Eee, e)
-                else:
-                    Em = np.append(Em,e)
-        print float(len(Em))/float(len(Ee)+len(Eee))
+    def EnergyDepositedSmart(self, energy):
+        Ee,Em,Eee = [],[],[]
+        f = [x.strip() for x in open('/home/david/Python/data/010190/%s'%energy)]
+        for i in f:
+            e = float(i)
+            if e > 140 and e < 150:
+                Em.append(e)
+            elif e < 140:
+                Ee.append(e)
+            else:
+                Eee.append(e)
+        print 'Separation complete'
+        print (float(len(Eee))/float(len(Em)+len(Ee)))**-1
         fig = plt.figure()
-        ax = fig.add_subplot(2,1,1)
+        ax = fig.add_subplot(3,1,1)
         ax.hist(Em, range=(min(Em),max(Em)), bins=50)
-        #ax = fig.add_subplot(3,1,2)
-        #ax.hist(Ee, range=(min(Ee),max(Ee)), bins=50)
-        ax = fig.add_subplot(2,1,2)
+        ax = fig.add_subplot(3,1,2)
+        ax.hist(Ee, range=(min(Ee),max(Ee)), bins=50)
+        ax = fig.add_subplot(3,1,3)
         ax.hist(Eee, range=(min(Eee),max(Eee)), bins=50)
         plt.show()
         #PlotHistogram(Em)
@@ -161,9 +163,9 @@ class Plot:
         #print sum(pi)*len(mu)/(sum(mu)*len(pi))
         
 def main():
-    plot = Plot(np.array([[0.1],[0.1],[50]]))
+    plot = Plot(np.array([[0.1],[0.1],[90]]))
     #PlotExit3D(int(1e4), 1000)
-    plot.EnergyDepositedDumb(1e3, 10000)
+    plot.EnergyDepositedSmart(10000)
     #MuonFraction(1e1, np.logspace(np.log10(500),np.log10(1e4)))
       
 if __name__ == '__main__':
