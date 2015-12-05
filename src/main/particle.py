@@ -167,3 +167,19 @@ class Muon(Particle):
             return self.energyvector.temporal
         else:
             return energy_lost
+
+'''import matplotlib.pyplot as plt
+def f():
+    l=[]
+    for i in range(10000):
+        x = Pion(10000)
+        x.DecayCheck(constants.Constants.dimensions)
+        y = x.Decay()
+        y.DecayCheck(constants.Constants.dimensions)
+        l.append(y.Decay().energyvector.temporal)
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    ax.hist(l, range=(min(l),max(l)), bins=50)
+    plt.show()
+
+f()'''
