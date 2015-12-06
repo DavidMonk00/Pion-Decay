@@ -14,26 +14,29 @@ from os import mkdir
 class Gen:
     def __init__(self, energy):
         self.det = '010190'
-        mkdir(self.det)
+        #mkdir(self.det)
         self.energy = energy
-    def EnergyDepositDumb(self, n, energy, detector):
+    def EnergyDepositDumb(self, n, detector):
         sim = Simulation(detector.position)   
-        f = open('010190/%s'%energy,'a')
+        f = open('010190/%s.data'%self.energy,'w')
+        fb = open('010190/%s.databackup'%self.energy,'a')
         for i in xrange(long(n)):
-            e = sim.ParticleDetect(energy)
+            e = sim.ParticleDetect(self.energy)
             if e != 0:
                 e_str = "%.2f"%e
             #if len(e_str) < 6:
             #    e_str = '0' + e_str          
                 f.write(e_str+'\n')
+                fb.write(e_str+'\n')
         f.close()
-    def UploadData(self, energy, detector):
+        fb.close()
+    def UploadData(self):
         ftp = FTPExt()
         busy = True
         while busy:
             busy = ftp.BusyCheck()
             if busy == False:
-                ftp.UploadData(energy, detector)
+                ftp.UploadData(self.energy, self.det)
                 ftp.MakeAvailable()
             else:
                 sleep(10)
@@ -41,9 +44,11 @@ class Gen:
 
 def main():
     detector = Detector(np.array([[0.1],[0.1],[90]]))
-    #UploadData(0)
-    #for i in range(10000):
-    #    EnergyDepositDumb(1e5, 10000, detector)
+    x = Gen(10000)
+    for i in range(1000):
+        print "%s%%"%(float(i)/float(1000))
+        x.EnergyDepositDumb(10000, detector)
+        x.UploadData()
 
 if __name__ == "__main__":
     main()
