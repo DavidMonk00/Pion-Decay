@@ -44,8 +44,9 @@ class Gen:
 
 def main():
     detector = Detector(np.array([[0.1],[0.1],[90]]))
-    x = Gen(1000)
-    for i in range(10):
+    x = Gen(10000)
+    for i in range(1000):
+        print "%s%%"%(float(i)/float(1000))
         x.EnergyDepositDumb(10000, detector)
         x.UploadData()
 
