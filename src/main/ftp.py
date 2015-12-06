@@ -6,7 +6,6 @@ Created on 4 Dec 2015
 
 from ftplib import FTP
 from os import remove
-from fileinput import filename
 
 class FTPExt:
     def __init__(self):
@@ -35,6 +34,7 @@ class FTPExt:
         temp = open('busy.txt','w')
         temp.write('0')
         temp.close()
+        self.ftp.cwd('/public_html/data')
         self.Upload('busy.txt')
         remove('busy.txt')
     def Download(self, filename, filepath=''):
@@ -43,9 +43,12 @@ class FTPExt:
         self.ftp.storbinary('STOR %s'%filename, open(filepath + filename))
     def UploadData(self, energy, detector):
         self.ftp.cwd(detector)
-        self.Download(energy, '%s/'%detector)
-        temp = open('%s/%s'%(detector,energy), energy)
-        self.Upload(str(energy)+'.temp','%s/'%detector)
+        self.Download(str(energy), '%s/'%detector)
+        temp = open('%s/%s'%(detector,energy), 'a')
+        for i in open('%s/%s.data'%(detector,energy)):
+            temp.write(i.strip()+'\n')
+        temp.close()
+        self.Upload(str(energy),'%s/'%detector)
     def Exit(self):
         '''Please use before terminating script'''
         self.ftp.quit()
