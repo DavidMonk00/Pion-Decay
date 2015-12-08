@@ -57,11 +57,11 @@ class Particle:
         Calculates where the particle will leave the tube and returns
         this position as an array
         '''
-        ct = np.linspace(0,(const.dimensions[1] - self.pos.spatial[2])/self.beta[2],1e3)
+        ct = np.linspace(0,(const.dimensions[1] - self.pos.spatial[2])/self.beta[2],1e4)
         pos = self.pos.spatial +  ct*self.beta
         pos_cyl = np.array([[np.sqrt((pos[0]*pos[0]) + (pos[1]*pos[1]))],[pos[2]]]).reshape(2,pos.shape[1])
-        exit_bool = pos_cyl < const.dimensions.reshape(2,1)
-        e = self.RecurFocusEnter(exit_bool)
+        exit_bool = pos_cyl > const.dimensions.reshape(2,1)
+        e = self.RecurFocusExit(exit_bool)
         return pos[:,e]
     def Detect(self, detector):
         t_enter = (detector.position-self.pos.spatial)/self.beta
@@ -171,19 +171,3 @@ class Muon(Particle):
             return self.energyvector.temporal
         else:
             return energy_lost
-
-'''import matplotlib.pyplot as plt
-def f():
-    l=[]
-    for i in range(10000):
-        x = Pion(10000)
-        x.DecayCheck(constants.Constants.dimensions)
-        y = x.Decay()
-        y.DecayCheck(constants.Constants.dimensions)
-        l.append(y.Decay().energyvector.temporal)
-    fig = plt.figure()
-    ax = fig.add_subplot(1,1,1)
-    ax.hist(l, range=(min(l),max(l)), bins=50)
-    plt.show()
-
-f()'''
