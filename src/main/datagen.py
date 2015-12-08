@@ -12,23 +12,30 @@ from time import sleep
 from os import mkdir
 
 class Gen:
+    '''Class for data generation and uploading to FTP server. 
+    Takes the argument of the initial energy of the Pion.'''
     def __init__(self, energy):
         self.det = '010190'
         #mkdir(self.det)
         self.energy = energy
     def EnergyDepositDumb(self, n, detector):
         sim = Simulation(detector.position)   
-        f = open('010190/%s.data'%self.energy,'w')
-        #fb = open('010190/%s.databackup'%self.energy,'a')
+        #f = open('010190/%s.data'%self.energy,'w')
+        fb = open('010190/%s_t.data'%self.energy,'a')
         for i in xrange(long(n)):
             e = sim.ParticleDetect(self.energy)
             if e != 0:
-                #print e
-                e_str = "%.2f"%e
-                f.write(e_str+'\n')
-                #fb.write(e_str+'\n')
-        f.close()
-        #fb.close()
+                #f.write(e_str+'\n')
+                fb.write(str(e)+'\n')
+        #f.close()
+        fb.close()
+    def TransverseMomentum(self, n, detector):
+        sim = Simulation(detector.position)
+        f = open('%s_tp.data'%self.energy,'a')
+        for i in xrange(long(n)):
+            p = sim.ParticleTranverseMomentum(self.energy)
+            if p != 0:
+               f.write(str(p)+'\n')  
     def UploadData(self):
         ftp = FTPExt()
         busy = True
@@ -44,12 +51,12 @@ class Gen:
 def main():
     detector = Detector(np.array([[0.1],[0.1],[90]]))
     x = Gen(10000)
-    cpus = 4
+    cpus = 1
     iterations =  1e7
     loops = iterations/(cpus*10000)
     for i in xrange(int(loops)):
         print "%s%%"%(float(i)/loops*100)
-        x.EnergyDepositDumb(10000, detector)
+        x.TransverseMomentum(10000, detector)
         #x.UploadData()
 
 if __name__ == "__main__":
