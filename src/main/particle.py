@@ -147,7 +147,7 @@ class Muon(Particle):
         self.decay_pos = rel.PositionFourVector(self.pos.temporal + ct, ct*self.beta)
         if self.decay_pos.spatial[2] > dimensions[1] or np.sqrt(self.decay_pos.spatial[0]*self.decay_pos.spatial[0] +
                                                                       self.decay_pos.spatial[1]*self.decay_pos.spatial[1]) > dimensions[0]:
-            self.exit_pos = self.ExitPosition()
+            #self.exit_pos = self.ExitPosition()
             return True
         return False   
     def Decay(self):
