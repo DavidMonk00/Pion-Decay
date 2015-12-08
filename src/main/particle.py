@@ -23,6 +23,7 @@ class Particle:
     '''
     Base particle class: __init__ calculates beta, gamma and decay time for given particle
     '''
+    smearing = True
     def __init__(self, energyvector, initial_position, mass = 1, lifetime = 0):
         ''' Initial position is a PostionFourVector class, with t = 0
             energy is a float which is the energy of the particle in MeV'''
@@ -131,7 +132,15 @@ class Electron(Particle):
         Particle.__init__(self, energyvector, initial_position, mass, lifetime)
     def EnergyDeposited(self, detector):
         dist = self.Detect(detector)
-        return self.energyvector.temporal*(1 - np.exp(-dist/0.026))
+        E = self.energyvector.temporal*(1 - np.exp(-dist/0.026))
+        if E != 0:
+            if self.smearing == True:
+                smear = np.random.normal(0,0.04)
+                return E*(1+smear/np.sqrt(E))
+            else:
+                return E
+        else:
+            return 0
     
 class Muon(Particle):
     def __init__(self, energyvector, initial_position):
@@ -166,8 +175,13 @@ class Muon(Particle):
                         self.decay_pos)
     def EnergyDeposited(self, detector): 
         dist = self.Detect(detector)
-        energy_lost = 480*dist
-        if energy_lost > self.energyvector.temporal:
-            return self.energyvector.temporal
+        E = 480*dist
+        if E != 0:
+            if self.smearing == True:
+                smear = np.random.normal(0,0.04)
+                return E*(1+smear/np.sqrt(E))
+            else:
+                return E
         else:
-            return energy_lost
+            return 0
+            
