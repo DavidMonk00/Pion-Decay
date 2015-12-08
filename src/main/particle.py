@@ -64,15 +64,22 @@ class Particle:
         e = self.RecurFocusEnter(exit_bool)
         return pos[:,e]
     def Detect(self, detector):
-        ct = np.linspace(0,(const.dimensions[1] - self.pos.spatial[2])/self.beta[2],1e5)
-        pos = self.pos.spatial +  ct*self.beta
-        enter_bool = pos > detector.position
-        exit_bool = pos > (detector.position + detector.dimensions)
-        a = self.RecurFocusEnter(enter_bool)
-        b = self.RecurFocusExit(exit_bool)
-        if b < a:
-            return np.zeros(2)
-        return np.array([pos[:,a],pos[:,b]])
+        t_enter = (detector.position-self.pos.spatial)/self.beta
+        t_exit = (detector.position+detector.dimensions-self.pos.spatial)/self.beta
+        pos_front = self.pos.spatial[:2] + self.beta[:2]*t_enter[2]
+        pos_rear = self.pos.spatial[:2] + self.beta[:2]*t_exit[2]
+        if (pos_front>detector.position[:2]).all() and (pos_front<(detector.position+detector.dimensions)[:2]).all():
+            t = np.sort(np.append(t_exit, t_enter[:2]))
+            for i in t:
+                if i > t_enter[2]:
+                    return np.linalg.norm(self.beta*(t_enter[2]-i))
+        elif (pos_rear>detector.position[:2]).all() and (pos_rear<(detector.position+detector.dimensions)[:2]).all():
+            t = np.sort(np.append(t_exit[:2], t_enter[:2]))
+            for i in xrange(4): 
+                if t[i] > t_exit[2]:
+                    return np.linalg.norm(self.beta*(t_enter[2]-t[i-1]))
+        else:
+            return 0
         
 class Pion(Particle):
     branching = 1e-4
@@ -89,7 +96,6 @@ class Pion(Particle):
         ct = const.c*self.decay_time
         self.decay_pos = rel.PositionFourVector(self.pos.temporal + ct, ct*self.beta)
         if self.decay_pos.spatial[2] > dimensions[1]:
-            self.type = "e"
             self.exit_pos = np.array([0,0,100])
             return True
         return False
@@ -124,8 +130,7 @@ class Electron(Particle):
         lifetime = np.Inf
         Particle.__init__(self, energyvector, initial_position, mass, lifetime)
     def EnergyDeposited(self, detector):
-        coords = self.Detect(detector)
-        dist = np.linalg.norm(coords[0]-coords[1])
+        dist = self.Detect(detector)
         return self.energyvector.temporal*(1 - np.exp(-dist/0.026))
     
 class Muon(Particle):
@@ -159,9 +164,8 @@ class Muon(Particle):
                                                          p*np.sin(_theta)*np.sin(_phi),
                                                          p*_costheta)).boost(-self.beta),
                         self.decay_pos)
-    def EnergyDeposited(self, detector):
-        coords = self.Detect(detector)
-        dist = np.linalg.norm(coords[0]-coords[1])
+    def EnergyDeposited(self, detector): 
+        dist = self.Detect(detector)
         energy_lost = 480*dist
         if energy_lost > self.energyvector.temporal:
             return self.energyvector.temporal

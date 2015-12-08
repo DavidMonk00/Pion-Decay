@@ -129,7 +129,7 @@ class Plot:
         #PlotHistogram(Em)  
     def EnergyDepositedSmart(self, energy):
         Ee,Em,Eee = [],[],[]
-        f = [x.strip() for x in open('/home/david/Python/data/010190/%s'%energy)]
+        f = [x.strip() for x in open('010190/%s'%energy)]
         for i in f:
             e = float(i)
             if e > 140 and e < 150:
