@@ -35,12 +35,12 @@ class Simulation:
             if pi.type == 'e':
                 return decay_part.EnergyDeposited(self.detector)
             else:
-                mu = decay_part
-                if mu.DecayCheck(np.array([2.5,self.detector.position[2]+0.3])) == False:
-                    el = mu.Decay()
+                return 0
+                if decay_part.DecayCheck(np.array([2.5,self.detector.position[2]+0.3])) == False:
+                    el = decay_part.Decay()
                     return el.EnergyDeposited(self.detector)
                 else:
-                    return mu.EnergyDeposited(self.detector)
+                    return decay_part.EnergyDeposited(self.detector)
         else:
             return 0
     def ParticleEnergy(self, energy):
@@ -78,6 +78,20 @@ class Simulation:
             decay_part.DecayCheck(self.const.dimensions)
             decay_times.append(decay_part.decay_time)
         return decay_times
+    def ParticleTranverseMomentum(self, energy):
+        pi = Pion(energy)
+        if pi.DecayCheck(self.const.dimensions) == False:
+            decay_part = pi.Decay()
+            if pi.type == 'e':
+                return decay_part.energyvector.Transverse()
+            else:
+                if decay_part.DecayCheck(self.const.dimensions) == False:
+                    el = decay_part.Decay()
+                    return el.energyvector.Transverse()
+                else:
+                    return 0
+        else:
+            return 0
     def MuonFractionCalc(self, n, energy):
         left = float(0)
         decayed = float(0)
