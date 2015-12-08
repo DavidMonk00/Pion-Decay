@@ -35,7 +35,6 @@ class Simulation:
             if pi.type == 'e':
                 return decay_part.EnergyDeposited(self.detector)
             else:
-                return 0
                 if decay_part.DecayCheck(np.array([2.5,self.detector.position[2]+0.3])) == False:
                     el = decay_part.Decay()
                     return el.EnergyDeposited(self.detector)
