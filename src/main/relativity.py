@@ -44,7 +44,9 @@ class FourVector:
         vect = np.array([self.temporal]+list(self.spatial)).reshape(4,1)
         b_v = np.dot(convarr,vect)
         return FourVector(float(b_v[0]),b_v[1:])
-     
+    def Transverse(self):
+        return float(np.sqrt(self.spatial[0]*self.spatial[0] + self.spatial[1]*self.spatial[1]))
+    
 class PositionFourVector(FourVector):
     def __repr__(self):
         return "%s(ct = %g, r = (%g, %g, %g))"%("PositionFourVector",self.temporal,tuple(self.spatial)[0],tuple(self.spatial)[1],tuple(self.spatial)[2])

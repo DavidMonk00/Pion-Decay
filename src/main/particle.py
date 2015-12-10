@@ -23,6 +23,7 @@ class Particle:
     '''
     Base particle class: __init__ calculates beta, gamma and decay time for given particle
     '''
+    smearing = True
     def __init__(self, energyvector, initial_position, mass = 1, lifetime = 0):
         ''' Initial position is a PostionFourVector class, with t = 0
             energy is a float which is the energy of the particle in MeV'''
@@ -57,11 +58,11 @@ class Particle:
         Calculates where the particle will leave the tube and returns
         this position as an array
         '''
-        ct = np.linspace(0,(const.dimensions[1] - self.pos.spatial[2])/self.beta[2],1e3)
+        ct = np.linspace(0,(const.dimensions[1] - self.pos.spatial[2])/self.beta[2],1e4)
         pos = self.pos.spatial +  ct*self.beta
         pos_cyl = np.array([[np.sqrt((pos[0]*pos[0]) + (pos[1]*pos[1]))],[pos[2]]]).reshape(2,pos.shape[1])
-        exit_bool = pos_cyl < const.dimensions.reshape(2,1)
-        e = self.RecurFocusEnter(exit_bool)
+        exit_bool = pos_cyl > const.dimensions.reshape(2,1)
+        e = self.RecurFocusExit(exit_bool)
         return pos[:,e]
     def Detect(self, detector):
         t_enter = (detector.position-self.pos.spatial)/self.beta
@@ -131,7 +132,15 @@ class Electron(Particle):
         Particle.__init__(self, energyvector, initial_position, mass, lifetime)
     def EnergyDeposited(self, detector):
         dist = self.Detect(detector)
-        return self.energyvector.temporal*(1 - np.exp(-dist/0.026))
+        E = self.energyvector.temporal*(1 - np.exp(-dist/0.026))
+        if E != 0:
+            if self.smearing == True:
+                smear = np.random.normal(0,0.04)
+                return E*(1+smear/np.sqrt(E))
+            else:
+                return E
+        else:
+            return 0
     
 class Muon(Particle):
     def __init__(self, energyvector, initial_position):
@@ -147,7 +156,7 @@ class Muon(Particle):
         self.decay_pos = rel.PositionFourVector(self.pos.temporal + ct, ct*self.beta)
         if self.decay_pos.spatial[2] > dimensions[1] or np.sqrt(self.decay_pos.spatial[0]*self.decay_pos.spatial[0] +
                                                                       self.decay_pos.spatial[1]*self.decay_pos.spatial[1]) > dimensions[0]:
-            self.exit_pos = self.ExitPosition()
+            #self.exit_pos = self.ExitPosition()
             return True
         return False   
     def Decay(self):
@@ -166,24 +175,13 @@ class Muon(Particle):
                         self.decay_pos)
     def EnergyDeposited(self, detector): 
         dist = self.Detect(detector)
-        energy_lost = 480*dist
-        if energy_lost > self.energyvector.temporal:
-            return self.energyvector.temporal
+        E = 480*dist
+        if E != 0:
+            if self.smearing == True:
+                smear = np.random.normal(0,0.04)
+                return E*(1+smear/np.sqrt(E))
+            else:
+                return E
         else:
-            return energy_lost
-
-'''import matplotlib.pyplot as plt
-def f():
-    l=[]
-    for i in range(10000):
-        x = Pion(10000)
-        x.DecayCheck(constants.Constants.dimensions)
-        y = x.Decay()
-        y.DecayCheck(constants.Constants.dimensions)
-        l.append(y.Decay().energyvector.temporal)
-    fig = plt.figure()
-    ax = fig.add_subplot(1,1,1)
-    ax.hist(l, range=(min(l),max(l)), bins=50)
-    plt.show()
-
-f()'''
+            return 0
+            

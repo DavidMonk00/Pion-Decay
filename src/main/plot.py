@@ -41,8 +41,8 @@ class Plot:
                 em[2].append(p_pos[2])  
         fig = plt.figure()
         ax = fig.add_subplot(111, aspect='equal', projection='3d')
-        ax.scatter(pi[0], pi[1], pi[2], c = 'g', s = 25)
-        ax.scatter(mu[0], mu[1], mu[2], c = 'k', s = 1)
+        #ax.scatter(pi[0], pi[1], pi[2], c = 'g', s = 25)
+        #ax.scatter(mu[0], mu[1], mu[2], c = 'k', s = 25)
         ax.scatter(e[0], e[1], e[2], c = 'r', s = 25)
         ax.scatter(em[0], em[1], em[2], c = 'b', s = 25)
         plt.show()
@@ -115,16 +115,21 @@ class Plot:
         ax.hist(mu, facecolor='green')
         ax.hist(em)
         plt.show()
-    def EnergyDepositedDumb(self, n , energy):
-        E = np.empty(0)
-        for i in range(int(n)):
-            e = self.sim.ParticleDetect(energy)
-            if e != 0:
-                print e
-                E = np.append(E,e)
+    def EnergyDepositedDumb(self, energy):
+        E = [x.strip() for x in open('010190/%s_electron.data'%energy)]
+        ME = [x.strip() for x in open('010190/%s_muon_electron.data'%energy)]
+        for i in xrange(len(E)):
+            E[i]= float(E[i])
+        for i in xrange(len(ME)):
+            ME[i]= float(ME[i])
+        #    e = self.sim.ParticleDetect(energy)
+        #    if e != 0:
+        #        print e
+        #        E = np.append(E,e)
         fig = plt.figure()
         ax = fig.add_subplot(1,1,1)
         ax.hist(E, range=(min(E),max(E)), bins=50)
+        ax.hist(ME, range=(min(ME),max(ME)), bins=50)
         plt.show()
         #PlotHistogram(Em)  
     def EnergyDepositedSmart(self, energy):
@@ -161,11 +166,21 @@ class Plot:
         print "Mean Pion decay time (in lab frame): ",sum(pi)/len(pi)
         print "Mean Muon decay time (in lab frame): ",sum(mu)/len(mu)
         #print sum(pi)*len(mu)/(sum(mu)*len(pi))
+    def TransverseMomentum(self, n, energy):
+        p = []
+        for i in xrange(long(n)):
+            mom = self.sim.ParticleTranverseMomentum(energy)
+            if mom != 0:
+                p.append(mom)
+        fig = plt.figure()
+        ax = fig.add_subplot(1,1,1)
+        ax.hist(p, range=(min(p),max(p)), bins=50)    
+        plt.show()
         
 def main():
     plot = Plot(np.array([[0.1],[0.1],[90]]))
     #PlotExit3D(int(1e4), 1000)
-    plot.EnergyDepositedSmart(10000)
+    plot.TransverseMomentum(1e5, 10000)
     #MuonFraction(1e1, np.logspace(np.log10(500),np.log10(1e4)))
       
 if __name__ == '__main__':
