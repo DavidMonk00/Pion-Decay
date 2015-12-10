@@ -9,14 +9,15 @@ import numpy as np
 from constants import Detector
 from ftp import FTPExt
 from time import sleep
-from os import mkdir
+from os import mkdir,listdir
 
 class Gen:
     '''Class for data generation and uploading to FTP server. 
     Takes the argument of the initial energy of the Pion.'''
     def __init__(self, energy):
         self.det = '010190'
-        #mkdir(self.det)
+        if self.det not in listdir():
+            mkdir(self.det)
         self.energy = energy
     def EnergyDepositDumb(self, n, detector):
         sim = Simulation(detector.position)   
@@ -24,10 +25,8 @@ class Gen:
         for i in xrange(long(n)):
             e = sim.ParticleDetect(self.energy)
             if e != 0:
-                #f.write(e_str+'\n')
-                fb.write(str(e)+'\n')
-        #f.close()
-        fb.close()
+                f.write(str(e)+'\n')
+        f.close()
     def TransverseMomentum(self, n, detector):
         sim = Simulation(detector.position)
         f = open('%s_tp.data'%self.energy,'a')
