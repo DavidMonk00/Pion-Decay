@@ -9,13 +9,6 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import numpy as np
 
-def PlotHistogram(data):
-    hist, bins = np.histogram(data, bins = 50)
-    width = 0.7*(bins[1]-bins[0])
-    center = (bins[:-1] + bins[1:]) / 2
-    plt.bar(center, hist, align='center', width=width)
-    plt.show()
-
 class Plot:
     def __init__(self, position):
         self.sim = Simulation(position)
@@ -41,8 +34,8 @@ class Plot:
                 em[2].append(p_pos[2])  
         fig = plt.figure()
         ax = fig.add_subplot(111, aspect='equal', projection='3d')
-        #ax.scatter(pi[0], pi[1], pi[2], c = 'g', s = 25)
-        #ax.scatter(mu[0], mu[1], mu[2], c = 'k', s = 25)
+        ax.scatter(pi[0], pi[1], pi[2], c = 'g', s = 25)
+        ax.scatter(mu[0], mu[1], mu[2], c = 'k', s = 25)
         ax.scatter(e[0], e[1], e[2], c = 'r', s = 25)
         ax.scatter(em[0], em[1], em[2], c = 'b', s = 25)
         plt.show()
@@ -63,7 +56,7 @@ class Plot:
                 pi[2].append(x[0][2])
         fig = plt.figure()
         ax = fig.add_subplot(111, aspect='equal', projection='3d')
-        #ax.scatter(pi[0], pi[1], pi[2], c = 'g', s = 25)
+        ax.scatter(pi[0], pi[1], pi[2], c = 'g', s = 25)
         ax.scatter(mu[0], mu[1], mu[2], c = 'b', s = 10)
         plt.show()
     def DecayPosition1D(self, n, energy):
@@ -75,17 +68,17 @@ class Plot:
                 mu.append(float(x[1][2]))
             elif len(x) == 1:
                 pi.append(float(x[0][2]))
-        #print "Mean Pion decay position (in lab frame): ",sum(pi)/len(pi)
-        #print "Mean Muon decay position (in lab frame): ",sum(mu)/len(mu)
+        print "Mean Pion decay position (in lab frame): ",sum(pi)/len(pi)
+        print "Mean Muon decay position (in lab frame): ",sum(mu)/len(mu)
         print sum(pi)/len(pi)
         print  sum(mu)/len(mu) - sum(pi)/len(pi)
         print len(pi)/len(mu)
-        '''fig = plt.figure()
+        fig = plt.figure()
         ax = fig.add_subplot(2,1,1)
         ax.(pi, bins = 50)
         ax = fig.add_subplot(2,1,2)
         ax.hist(mu, bins = 50)
-        plt.show()'''
+        plt.show()
     def MuonFraction(self, n, energy_array):
         frac = []
         for i in energy_array:
@@ -116,22 +109,13 @@ class Plot:
         ax.hist(em)
         plt.show()
     def EnergyDepositedDumb(self, energy):
-        E = [x.strip() for x in open('010190/%s_electron.data'%energy)]
-        ME = [x.strip() for x in open('010190/%s_muon_electron.data'%energy)]
+        E = [x.strip() for x in open('01-0190/%s'%energy)]
         for i in xrange(len(E)):
             E[i]= float(E[i])
-        for i in xrange(len(ME)):
-            ME[i]= float(ME[i])
-        #    e = self.sim.ParticleDetect(energy)
-        #    if e != 0:
-        #        print e
-        #        E = np.append(E,e)
         fig = plt.figure()
         ax = fig.add_subplot(1,1,1)
         ax.hist(E, range=(min(E),max(E)), bins=50)
-        ax.hist(ME, range=(min(ME),max(ME)), bins=50)
         plt.show()
-        #PlotHistogram(Em)  
     def EnergyDepositedSmart(self, energy):
         Ee,Em,Eee = [],[],[]
         f = [x.strip() for x in open('010190/%s'%energy)]
@@ -153,7 +137,6 @@ class Plot:
         ax = fig.add_subplot(3,1,3)
         ax.hist(Eee, range=(min(Eee),max(Eee)), bins=50)
         plt.show()
-        #PlotHistogram(Em)
     def DecayTime(self, n, energy):
         pi, mu = [],[]
         for i in xrange(int(n)):
@@ -165,7 +148,7 @@ class Plot:
                 pi.append(x[0])
         print "Mean Pion decay time (in lab frame): ",sum(pi)/len(pi)
         print "Mean Muon decay time (in lab frame): ",sum(mu)/len(mu)
-        #print sum(pi)*len(mu)/(sum(mu)*len(pi))
+        print sum(pi)*len(mu)/(sum(mu)*len(pi))
     def TransverseMomentum(self, n, energy):
         p = []
         for i in xrange(long(n)):
@@ -179,9 +162,7 @@ class Plot:
         
 def main():
     plot = Plot(np.array([[0.1],[0.1],[90]]))
-    #PlotExit3D(int(1e4), 1000)
     plot.TransverseMomentum(1e5, 10000)
-    #MuonFraction(1e1, np.logspace(np.log10(500),np.log10(1e4)))
       
 if __name__ == '__main__':
     main()    
