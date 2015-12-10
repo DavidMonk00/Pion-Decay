@@ -15,7 +15,7 @@ class Gen:
     '''Class for data generation and uploading to FTP server. 
     Takes the argument of the initial energy of the Pion.'''
     def __init__(self, energy):
-        self.det = '010190'
+        self.det = '01-0190'
         if self.det not in listdir():
             mkdir(self.det)
         self.energy = energy
