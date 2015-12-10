@@ -52,13 +52,3 @@ class FTPExt:
     def Exit(self):
         '''Please use before terminating script'''
         self.ftp.quit()
-
-def main():
-    f = FTPExt()
-    f.ListFile()
-    #f.Download('busy.txt')
-    #f.Upload('10000','/home/david/Python/data/010190/')
-    f.Exit()
-    
-if __name__ == '__main__':
-    main()
