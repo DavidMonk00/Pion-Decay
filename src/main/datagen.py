@@ -20,8 +20,7 @@ class Gen:
         self.energy = energy
     def EnergyDepositDumb(self, n, detector):
         sim = Simulation(detector.position)   
-        #f = open('010190/%s.data'%self.energy,'w')
-        fb = open('010190/%s_smear.data'%self.energy,'a')
+        f = open('01-0190/%s'%self.energy,'w')
         for i in xrange(long(n)):
             e = sim.ParticleDetect(self.energy)
             if e != 0:
